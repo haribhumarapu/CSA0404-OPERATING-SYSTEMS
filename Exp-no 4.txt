@@ -1,0 +1,78 @@
+#include <stdio.h>
+
+#define MAX_PROCESSES 10
+
+typedef struct {
+    int process_id;
+    int arrival_time;
+    int burst_time;
+    int completion_time;
+    int turnaround_time;
+    int waiting_time;
+    int executed; // Flag to track whether process has been executed
+} Process;
+
+void executeSJN(Process processes[], int n) {
+    int current_time = 0;
+    int remaining_processes = n;
+
+    while (remaining_processes > 0) {
+        int shortest_job_index = -1;
+        int shortest_job_burst = __INT_MAX__;
+
+        for (int i = 0; i < n; i++) {
+            if (!processes[i].executed && processes[i].arrival_time <= current_time &&
+                processes[i].burst_time < shortest_job_burst) {
+                shortest_job_index = i;
+                shortest_job_burst = processes[i].burst_time;
+            }
+        }
+
+        if (shortest_job_index != -1) {
+            processes[shortest_job_index].completion_time = current_time + processes[shortest_job_index].burst_time;
+            processes[shortest_job_index].turnaround_time = processes[shortest_job_index].completion_time - processes[shortest_job_index].arrival_time;
+            processes[shortest_job_index].waiting_time = processes[shortest_job_index].turnaround_time - processes[shortest_job_index].burst_time;
+            processes[shortest_job_index].executed = 1;
+            remaining_processes--;
+
+            printf("Process %d executed from time %d to %d\n", processes[shortest_job_index].process_id,
+                   current_time, processes[shortest_job_index].completion_time);
+
+            current_time = processes[shortest_job_index].completion_time;
+        } else {
+            // If no process available to execute, move to the next time unit
+            current_time++;
+        }
+    }
+}
+
+int main() {
+    int n;
+    Process processes[MAX_PROCESSES];
+
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    printf("Enter arrival time and burst time for each process:\n");
+    for (int i = 0; i < n; i++) {
+        printf("Process %d:\n", i + 1);
+        processes[i].process_id = i + 1;
+        printf("Arrival time: ");
+        scanf("%d", &processes[i].arrival_time);
+        printf("Burst time: ");
+        scanf("%d", &processes[i].burst_time);
+        processes[i].executed = 0;
+    }
+
+    executeSJN(processes, n);
+
+    // Calculate and print average waiting time
+    float avg_waiting_time = 0;
+    for (int i = 0; i < n; i++) {
+        avg_waiting_time += processes[i].waiting_time;
+    }
+    avg_waiting_time /= n;
+    printf("Average Waiting Time: %.2f\n", avg_waiting_time);
+
+    return 0;
+}
