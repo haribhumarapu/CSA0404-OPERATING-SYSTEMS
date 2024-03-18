@@ -1,0 +1,162 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define FILENAME "employee_records.dat"
+#define RECORD_SIZE sizeof(struct Employee)
+
+// Structure to represent an employee
+struct Employee {
+    int emp_id;
+    char name[50];
+    float salary;
+};
+
+// Function to add a new employee record
+void addEmployee() {
+    struct Employee emp;
+    printf("Enter employee ID: ");
+    scanf("%d", &emp.emp_id);
+    printf("Enter employee name: ");
+    scanf("%s", emp.name);
+    printf("Enter employee salary: ");
+    scanf("%f", &emp.salary);
+
+    FILE* fp = fopen(FILENAME, "ab");
+    if (fp == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    fwrite(&emp, RECORD_SIZE, 1, fp);
+    fclose(fp);
+    printf("Employee added successfully.\n");
+}
+
+// Function to display all employee records
+void displayEmployees() {
+    struct Employee emp;
+    FILE* fp = fopen(FILENAME, "rb");
+    if (fp == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    printf("Employee Records:\n");
+    while (fread(&emp, RECORD_SIZE, 1, fp) == 1) {
+        printf("ID: %d, Name: %s, Salary: %.2f\n", emp.emp_id, emp.name, emp.salary);
+    }
+
+    fclose(fp);
+}
+
+// Function to update employee record by ID
+void updateEmployee(int emp_id) {
+    struct Employee emp;
+    FILE* fp = fopen(FILENAME, "r+b");
+    if (fp == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    int found = 0;
+    while (fread(&emp, RECORD_SIZE, 1, fp) == 1) {
+        if (emp.emp_id == emp_id) {
+            found = 1;
+            printf("Enter new name: ");
+            scanf("%s", emp.name);
+            printf("Enter new salary: ");
+            scanf("%f", &emp.salary);
+
+            fseek(fp, -RECORD_SIZE, SEEK_CUR);
+            fwrite(&emp, RECORD_SIZE, 1, fp);
+            printf("Employee record updated successfully.\n");
+            break;
+        }
+    }
+
+    if (!found) {
+        printf("Employee with ID %d not found.\n", emp_id);
+    }
+
+    fclose(fp);
+}
+
+// Function to delete employee record by ID
+void deleteEmployee(int emp_id) {
+    struct Employee emp;
+    FILE* fp = fopen(FILENAME, "rb");
+    if (fp == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    FILE* temp_fp = fopen("temp.dat", "wb");
+    if (temp_fp == NULL) {
+        perror("Error creating temporary file");
+        fclose(fp);
+        return;
+    }
+
+    int found = 0;
+    while (fread(&emp, RECORD_SIZE, 1, fp) == 1) {
+        if (emp.emp_id != emp_id) {
+            fwrite(&emp, RECORD_SIZE, 1, temp_fp);
+        } else {
+            found = 1;
+        }
+    }
+
+    fclose(fp);
+    fclose(temp_fp);
+
+    remove(FILENAME);
+    rename("temp.dat", FILENAME);
+
+    if (found) {
+        printf("Employee with ID %d deleted successfully.\n", emp_id);
+    } else {
+        printf("Employee with ID %d not found.\n", emp_id);
+    }
+}
+
+int main() {
+    int choice;
+    int emp_id;
+
+    while (1) {
+        printf("\n1. Add Employee\n");
+        printf("2. Display Employees\n");
+        printf("3. Update Employee\n");
+        printf("4. Delete Employee\n");
+        printf("5. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                addEmployee();
+                break;
+            case 2:
+                displayEmployees();
+                break;
+            case 3:
+                printf("Enter employee ID to update: ");
+                scanf("%d", &emp_id);
+                updateEmployee(emp_id);
+                break;
+            case 4:
+                printf("Enter employee ID to delete: ");
+                scanf("%d", &emp_id);
+                deleteEmployee(emp_id);
+                break;
+            case 5:
+                printf("Exiting...\n");
+                exit(0);
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    }
+
+    return 0;
+}

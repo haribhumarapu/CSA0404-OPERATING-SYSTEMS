@@ -1,0 +1,134 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_PROCESSES 5
+#define MAX_RESOURCES 3
+
+int available[MAX_RESOURCES];
+int allocation[MAX_PROCESSES][MAX_RESOURCES];
+int maximum[MAX_PROCESSES][MAX_RESOURCES];
+int need[MAX_PROCESSES][MAX_RESOURCES];
+bool finished[MAX_PROCESSES];
+
+// Function to initialize the data structures
+void initialize() {
+    // Initialize available resources
+    printf("Enter the available instances of each resource:\n");
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        scanf("%d", &available[i]);
+    }
+
+    // Initialize allocation and maximum matrices
+    printf("Enter the allocation matrix:\n");
+    for (int i = 0; i < MAX_PROCESSES; ++i) {
+        for (int j = 0; j < MAX_RESOURCES; ++j) {
+            scanf("%d", &allocation[i][j]);
+        }
+    }
+
+    printf("Enter the maximum matrix:\n");
+    for (int i = 0; i < MAX_PROCESSES; ++i) {
+        for (int j = 0; j < MAX_RESOURCES; ++j) {
+            scanf("%d", &maximum[i][j]);
+            need[i][j] = maximum[i][j] - allocation[i][j];
+        }
+        finished[i] = false;
+    }
+}
+
+// Function to check if a request can be granted
+bool canAllocate(int process, int request[]) {
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        if (request[i] > need[process][i] || request[i] > available[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Function to simulate resource allocation
+void allocateResources(int process, int request[]) {
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        available[i] -= request[i];
+        allocation[process][i] += request[i];
+        need[process][i] -= request[i];
+    }
+}
+
+// Function to simulate resource release
+void releaseResources(int process) {
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        available[i] += allocation[process][i];
+        allocation[process][i] = 0;
+        need[process][i] = 0;
+    }
+    finished[process] = true;
+}
+
+// Function to simulate the Banker's algorithm
+void bankerAlgorithm() {
+    int request[MAX_RESOURCES];
+    int process;
+    printf("Enter the process requesting resources: ");
+    scanf("%d", &process);
+
+    printf("Enter the request for each resource:\n");
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        scanf("%d", &request[i]);
+    }
+
+    if (!canAllocate(process, request)) {
+        printf("Request cannot be granted immediately. Process must wait.\n");
+        return;
+    }
+
+    allocateResources(process, request);
+
+    // Safety check
+    bool safe = true;
+    bool visited[MAX_PROCESSES] = {false};
+    int work[MAX_RESOURCES];
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        work[i] = available[i];
+    }
+
+    int sequence[MAX_PROCESSES];
+    int seqIndex = 0;
+
+    while (seqIndex < MAX_PROCESSES) {
+        bool found = false;
+        for (int i = 0; i < MAX_PROCESSES; ++i) {
+            if (!visited[i] && canAllocate(i, need[i])) {
+                found = true;
+                visited[i] = true;
+                sequence[seqIndex++] = i;
+                for (int j = 0; j < MAX_RESOURCES; ++j) {
+                    work[j] += allocation[i][j];
+                }
+                break;
+            }
+        }
+        if (!found) {
+            safe = false;
+            break;
+        }
+    }
+
+    if (!safe) {
+        // Rollback allocation
+        printf("Unsafe state detected. Rolling back allocation.\n");
+        releaseResources(process);
+    } else {
+        printf("Request granted. Safe state. Safe sequence: ");
+        for (int i = 0; i < MAX_PROCESSES; ++i) {
+            printf("%d ", sequence[i]);
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    initialize();
+    bankerAlgorithm();
+    return 0;
+}

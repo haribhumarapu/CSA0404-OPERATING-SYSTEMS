@@ -1,0 +1,218 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MEMORY_SIZE 1000
+
+// Node structure to represent a block of memory
+typedef struct MemoryBlock {
+    int start_address;
+    int size;
+    struct MemoryBlock* next;
+} MemoryBlock;
+
+MemoryBlock* memory = NULL;
+
+// Function to initialize memory
+void initializeMemory() {
+    memory = (MemoryBlock*)malloc(sizeof(MemoryBlock));
+    memory->start_address = 0;
+    memory->size = MEMORY_SIZE;
+    memory->next = NULL;
+}
+
+// Function to display memory blocks
+void displayMemory() {
+    MemoryBlock* curr = memory;
+    while (curr != NULL) {
+        printf("Start Address: %d, Size: %d\n", curr->start_address, curr->size);
+        curr = curr->next;
+    }
+}
+
+// Function to allocate memory using First Fit strategy
+void firstFit(int process_size) {
+    MemoryBlock* curr = memory;
+    MemoryBlock* prev = NULL;
+    while (curr != NULL) {
+        if (curr->size >= process_size) {
+            MemoryBlock* new_block = (MemoryBlock*)malloc(sizeof(MemoryBlock));
+            new_block->start_address = curr->start_address;
+            new_block->size = process_size;
+            new_block->next = NULL;
+
+            if (prev == NULL) {
+                memory = curr->next;
+            } else {
+                prev->next = curr->next;
+            }
+
+            curr->start_address += process_size;
+            curr->size -= process_size;
+
+            if (curr->size == 0) {
+                if (prev == NULL) {
+                    memory = curr->next;
+                } else {
+                    prev->next = curr->next;
+                }
+                free(curr);
+            }
+
+            printf("Memory allocated using First Fit. Start Address: %d, Size: %d\n", new_block->start_address, new_block->size);
+            free(new_block);
+            return;
+        }
+        prev = curr;
+        curr = curr->next;
+    }
+    printf("Memory allocation failed using First Fit.\n");
+}
+
+// Function to allocate memory using Best Fit strategy
+void bestFit(int process_size) {
+    MemoryBlock* curr = memory;
+    MemoryBlock* best_fit = NULL;
+    MemoryBlock* prev = NULL;
+    int min_fragmentation = MEMORY_SIZE + 1;
+
+    while (curr != NULL) {
+        if (curr->size >= process_size && curr->size - process_size < min_fragmentation) {
+            best_fit = curr;
+            min_fragmentation = curr->size - process_size;
+        }
+        curr = curr->next;
+    }
+
+    if (best_fit != NULL) {
+        MemoryBlock* new_block = (MemoryBlock*)malloc(sizeof(MemoryBlock));
+        new_block->start_address = best_fit->start_address;
+        new_block->size = process_size;
+        new_block->next = NULL;
+
+        best_fit->start_address += process_size;
+        best_fit->size -= process_size;
+
+        if (best_fit->size == 0) {
+            if (prev == NULL) {
+                memory = best_fit->next;
+            } else {
+                prev->next = best_fit->next;
+            }
+            free(best_fit);
+        }
+
+        printf("Memory allocated using Best Fit. Start Address: %d, Size: %d\n", new_block->start_address, new_block->size);
+        free(new_block);
+    } else {
+        printf("Memory allocation failed using Best Fit.\n");
+    }
+}
+
+// Function to allocate memory using Worst Fit strategy
+void worstFit(int process_size) {
+    MemoryBlock* curr = memory;
+    MemoryBlock* worst_fit = NULL;
+    MemoryBlock* prev = NULL;
+    int max_fragmentation = -1;
+
+    while (curr != NULL) {
+        if (curr->size >= process_size && curr->size - process_size > max_fragmentation) {
+            worst_fit = curr;
+            max_fragmentation = curr->size - process_size;
+        }
+        curr = curr->next;
+    }
+
+    if (worst_fit != NULL) {
+        MemoryBlock* new_block = (MemoryBlock*)malloc(sizeof(MemoryBlock));
+        new_block->start_address = worst_fit->start_address;
+        new_block->size = process_size;
+        new_block->next = NULL;
+
+        worst_fit->start_address += process_size;
+        worst_fit->size -= process_size;
+
+        if (worst_fit->size == 0) {
+            if (prev == NULL) {
+                memory = worst_fit->next;
+            } else {
+                prev->next = worst_fit->next;
+            }
+            free(worst_fit);
+        }
+
+        printf("Memory allocated using Worst Fit. Start Address: %d, Size: %d\n", new_block->start_address, new_block->size);
+        free(new_block);
+    } else {
+        printf("Memory allocation failed using Worst Fit.\n");
+    }
+}
+
+// Function to deallocate memory
+void deallocateMemory(int start_address, int size) {
+    MemoryBlock* new_block = (MemoryBlock*)malloc(sizeof(MemoryBlock));
+    new_block->start_address = start_address;
+    new_block->size = size;
+    new_block->next = NULL;
+
+    if (memory == NULL) {
+        memory = new_block;
+        return;
+    }
+
+    MemoryBlock* curr = memory;
+    MemoryBlock* prev = NULL;
+
+    while (curr != NULL && curr->start_address < start_address) {
+        prev = curr;
+        curr = curr->next;
+    }
+
+    if (curr == memory) {
+        new_block->next = memory;
+        memory = new_block;
+    } else {
+        new_block->next = curr;
+        prev->next = new_block;
+    }
+
+    // Merge adjacent blocks if possible
+    curr = memory;
+    prev = NULL;
+    while (curr != NULL) {
+        if (prev != NULL && prev->start_address + prev->size == curr->start_address) {
+            prev->size += curr->size;
+            prev->next = curr->next;
+            free(curr);
+            curr = prev->next;
+        } else {
+            prev = curr;
+            curr = curr->next;
+        }
+    }
+}
+
+int main() {
+    initializeMemory();
+
+    printf("Initial Memory State:\n");
+    displayMemory();
+
+    printf("\nAllocating memory for process of size 200 using First Fit:\n");
+    firstFit(200);
+    displayMemory();
+
+    printf("\nAllocating memory for process of size 300 using Best Fit:\n");
+    bestFit(300);
+    displayMemory();
+
+    printf("\nAllocating memory for process of size 150 using Worst Fit:\n");
+    worstFit(150);
+    displayMemory();
+
+    printf("\nDeallocating memory for process starting from address 0 with size 200:\n");
+    deallocateMemory(0, 200);
+    displayMemory();
+
+    return 0;
+}

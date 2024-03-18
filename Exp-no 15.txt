@@ -1,0 +1,131 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structure to represent a file
+typedef struct File {
+    char name[50];
+    struct File* next;
+} File;
+
+// Structure to represent a directory
+typedef struct Directory {
+    char name[50];
+    File* files;
+    struct Directory* next;
+} Directory;
+
+Directory* rootDirectory = NULL; // Global variable to represent the root directory
+
+// Function to create a new directory
+void createDirectory(char name[]) {
+    Directory* newDirectory = (Directory*)malloc(sizeof(Directory));
+    strcpy(newDirectory->name, name);
+    newDirectory->files = NULL;
+    newDirectory->next = NULL;
+
+    if (rootDirectory == NULL) {
+        rootDirectory = newDirectory;
+    } else {
+        Directory* temp = rootDirectory;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newDirectory;
+    }
+
+    printf("Directory '%s' created successfully.\n", name);
+}
+
+// Function to create a new file in a directory
+void createFile(char directoryName[], char fileName[]) {
+    Directory* temp = rootDirectory;
+    while (temp != NULL && strcmp(temp->name, directoryName) != 0) {
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        printf("Directory '%s' not found.\n", directoryName);
+    } else {
+        File* newFile = (File*)malloc(sizeof(File));
+        strcpy(newFile->name, fileName);
+        newFile->next = NULL;
+
+        if (temp->files == NULL) {
+            temp->files = newFile;
+        } else {
+            File* fileTemp = temp->files;
+            while (fileTemp->next != NULL) {
+                fileTemp = fileTemp->next;
+            }
+            fileTemp->next = newFile;
+        }
+
+        printf("File '%s' created successfully in directory '%s'.\n", fileName, directoryName);
+    }
+}
+
+// Function to list files in a directory
+void listFiles(char directoryName[]) {
+    Directory* temp = rootDirectory;
+    while (temp != NULL && strcmp(temp->name, directoryName) != 0) {
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        printf("Directory '%s' not found.\n", directoryName);
+    } else {
+        if (temp->files == NULL) {
+            printf("Directory '%s' is empty.\n", directoryName);
+        } else {
+            printf("Files in directory '%s':\n", directoryName);
+            File* fileTemp = temp->files;
+            while (fileTemp != NULL) {
+                printf("%s\n", fileTemp->name);
+                fileTemp = fileTemp->next;
+            }
+        }
+    }
+}
+
+int main() {
+    int choice;
+    char directoryName[50];
+    char fileName[50];
+
+    while (1) {
+        printf("\n1. Create a directory\n");
+        printf("2. Create a file\n");
+        printf("3. List files in a directory\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter directory name to create: ");
+                scanf("%s", directoryName);
+                createDirectory(directoryName);
+                break;
+            case 2:
+                printf("Enter directory name to create file in: ");
+                scanf("%s", directoryName);
+                printf("Enter file name to create: ");
+                scanf("%s", fileName);
+                createFile(directoryName, fileName);
+                break;
+            case 3:
+                printf("Enter directory name to list files: ");
+                scanf("%s", directoryName);
+                listFiles(directoryName);
+                break;
+            case 4:
+                printf("Exiting...\n");
+                exit(0);
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    }
+
+    return 0;
+}
