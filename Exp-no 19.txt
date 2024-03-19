@@ -1,0 +1,37 @@
+#include <stdio.h>
+#include <pthread.h>
+
+#define NUM_THREADS 5
+
+pthread_mutex_t lock;
+
+void *print_message(void *ptr) {
+    char *message = (char *)ptr;
+    pthread_mutex_lock(&lock);
+    printf("%s\n", message);
+    pthread_mutex_unlock(&lock);
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t threads[NUM_THREADS];
+    char *messages[NUM_THREADS] = {"Thread 1", "Thread 2", "Thread 3", "Thread 4", "Thread 5"};
+
+    // Initialize mutex
+    pthread_mutex_init(&lock, NULL);
+
+    // Create threads
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_create(&threads[i], NULL, print_message, (void *)messages[i]);
+    }
+
+    // Join threads
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    // Destroy mutex
+    pthread_mutex_destroy(&lock);
+
+    return 0;
+}

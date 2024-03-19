@@ -1,0 +1,82 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_BLOCKS 10
+
+// Structure to represent a memory block
+typedef struct {
+    int block_id;
+    int size;
+    int allocated;
+} MemoryBlock;
+
+// Function to initialize memory blocks
+void initializeMemoryBlocks(MemoryBlock memory[], int n) {
+    for (int i = 0; i < n; ++i) {
+        memory[i].block_id = i + 1;
+        memory[i].size = rand() % 100 + 1; // Random size between 1 and 100
+        memory[i].allocated = 0;
+    }
+}
+
+// Function to print memory blocks
+void printMemoryBlocks(MemoryBlock memory[], int n) {
+    printf("Memory Blocks:\n");
+    printf("Block ID\tSize\tAllocated\n");
+    for (int i = 0; i < n; ++i) {
+        printf("%d\t\t%d\t%s\n", memory[i].block_id, memory[i].size,
+               memory[i].allocated ? "Yes" : "No");
+    }
+    printf("\n");
+}
+
+// Function to allocate memory using Worst Fit algorithm
+void allocateMemoryWorstFit(MemoryBlock memory[], int n, int process_size) {
+    int largest_index = -1;
+    int largest_size = -1;
+
+    // Find the largest free block
+    for (int i = 0; i < n; ++i) {
+        if (!memory[i].allocated && memory[i].size >= process_size && memory[i].size > largest_size) {
+            largest_index = i;
+            largest_size = memory[i].size;
+        }
+    }
+
+    // Allocate memory if a block is found
+    if (largest_index != -1) {
+        printf("Allocated memory of size %d to process.\n", process_size);
+        memory[largest_index].allocated = 1;
+    } else {
+        printf("Not enough memory available for process of size %d.\n", process_size);
+    }
+}
+
+int main() {
+    MemoryBlock memory[MAX_BLOCKS];
+    int num_blocks = MAX_BLOCKS;
+    int process_size;
+
+    // Initialize memory blocks
+    initializeMemoryBlocks(memory, num_blocks);
+
+    // Print initial memory status
+    printf("Initial Memory Status:\n");
+    printMemoryBlocks(memory, num_blocks);
+
+    // Example: Allocate memory for processes
+    process_size = 50;
+    allocateMemoryWorstFit(memory, num_blocks, process_size);
+
+    process_size = 80;
+    allocateMemoryWorstFit(memory, num_blocks, process_size);
+
+    process_size = 30;
+    allocateMemoryWorstFit(memory, num_blocks, process_size);
+
+    // Print final memory status
+    printf("Final Memory Status:\n");
+    printMemoryBlocks(memory, num_blocks);
+
+    return 0;
+}

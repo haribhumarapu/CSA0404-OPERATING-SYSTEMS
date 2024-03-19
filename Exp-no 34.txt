@@ -1,0 +1,32 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_RECORDS 100
+
+typedef struct {
+    int record_id;
+    // Add other fields as needed
+} Record;
+
+int main() {
+    Record records[MAX_RECORDS];
+    int num_records;
+
+    printf("Enter the number of records: ");
+    scanf("%d", &num_records);
+
+    // Reading records
+    for (int i = 0; i < num_records; ++i) {
+        printf("Enter data for record %d: ", i + 1);
+        // Example: scanf("%d", &records[i].field);
+    }
+
+    // Reading records sequentially
+    printf("Records accessed sequentially:\n");
+    for (int i = 0; i < num_records; ++i) {
+        // Access records here
+        printf("Record %d: Data\n", i + 1); // Example: printf("Record %d: %d\n", i + 1, records[i].field);
+    }
+
+    return 0;
+}

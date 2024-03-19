@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_BLOCKS 100
+
+typedef struct Block {
+    int block_number;
+    struct Block *next;
+    // Add other fields as needed
+} Block;
+
+int main() {
+    Block *head = NULL, *tail = NULL;
+    int num_blocks;
+
+    printf("Enter the number of blocks: ");
+    scanf("%d", &num_blocks);
+
+    // Creating linked list of blocks
+    for (int i = 0; i < num_blocks; ++i) {
+        Block *new_block = (Block *)malloc(sizeof(Block));
+        if (new_block == NULL) {
+            fprintf(stderr, "Memory allocation failed\n");
+            return 1;
+        }
+        new_block->block_number = i + 1;
+        new_block->next = NULL;
+        if (head == NULL) {
+            head = tail = new_block;
+        } else {
+            tail->next = new_block;
+            tail = new_block;
+        }
+    }
+
+    // Accessing blocks using linked list
+    printf("Blocks accessed using linked list:\n");
+    Block *current = head;
+    while (current != NULL) {
+        // Access block here using current->block_number
+        printf("Block %d: Data\n", current->block_number);
+        current = current->next;
+    }
+
+    // Freeing memory
+    current = head;
+    while (current != NULL) {
+        Block *temp = current;
+        current = current->next;
+        free(temp);
+    }
+
+    return 0;
+}

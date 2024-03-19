@@ -1,0 +1,38 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_RECORDS 100
+#define MAX_INDEX_ENTRIES 100
+
+typedef struct {
+    int block_number;
+    // Add other fields as needed
+} IndexEntry;
+
+typedef struct {
+    IndexEntry index[MAX_INDEX_ENTRIES];
+    int num_records;
+} IndexBlock;
+
+int main() {
+    IndexBlock index_block;
+    int num_records;
+
+    printf("Enter the number of records: ");
+    scanf("%d", &num_records);
+
+    // Reading records and creating index
+    index_block.num_records = num_records;
+    for (int i = 0; i < num_records; ++i) {
+        // Example: index_block.index[i].block_number = i + 1;
+    }
+
+    // Accessing records using index
+    printf("Records accessed using index:\n");
+    for (int i = 0; i < num_records; ++i) {
+        // Access records here using index_block.index[i].block_number
+        printf("Record %d: Data\n", i + 1);
+    }
+
+    return 0;
+}

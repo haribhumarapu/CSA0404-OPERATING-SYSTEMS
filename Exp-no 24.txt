@@ -1,0 +1,38 @@
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+int main() {
+    // Creating a file
+    int fd = creat("test.txt", 0644);
+    if (fd == -1) {
+        perror("Error creating file");
+        return 1;
+    }
+    printf("File created successfully.\n");
+
+    // Closing the file
+    close(fd);
+    printf("File closed.\n");
+
+    // Opening the file in read-only mode
+    fd = open("test.txt", O_RDONLY);
+    if (fd == -1) {
+        perror("Error opening file");
+        return 1;
+    }
+    printf("File opened successfully.\n");
+
+    // Closing the file again
+    close(fd);
+    printf("File closed.\n");
+
+    // Deleting the file
+    if (unlink("test.txt") == -1) {
+        perror("Error deleting file");
+        return 1;
+    }
+    printf("File deleted successfully.\n");
+
+    return 0;
+}

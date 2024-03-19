@@ -1,0 +1,34 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    // Example of file operations
+    FILE *file = fopen("example.txt", "w");
+    if (file == NULL) {
+        perror("Error creating file");
+        return 1;
+    }
+    fprintf(file, "This is an example file.\n");
+    fclose(file);
+
+    // Reading from the file
+    file = fopen("example.txt", "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        return 1;
+    }
+    char buffer[100];
+    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+        printf("%s", buffer);
+    }
+    fclose(file);
+
+    // Deleting the file
+    if (remove("example.txt") != 0) {
+        perror("Error deleting file");
+        return 1;
+    }
+    printf("File deleted successfully.\n");
+
+    return 0;
+}

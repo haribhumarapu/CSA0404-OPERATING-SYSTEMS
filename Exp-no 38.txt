@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int num_requests, head_position;
+
+    printf("Enter the number of disk requests: ");
+    scanf("%d", &num_requests);
+
+    int *requests = (int *)malloc(num_requests * sizeof(int));
+    if (requests == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return 1;
+    }
+
+    printf("Enter the disk request queue:\n");
+    for (int i = 0; i < num_requests; ++i) {
+        scanf("%d", &requests[i]);
+    }
+
+    printf("Enter the current head position: ");
+    scanf("%d", &head_position);
+
+    // Sort the requests
+    for (int i = 0; i < num_requests - 1; ++i) {
+        for (int j = 0; j < num_requests - i - 1; ++j) {
+            if (requests[j] > requests[j + 1]) {
+                int temp = requests[j];
+                requests[j] = requests[j + 1];
+                requests[j + 1] = temp;
+            }
+        }
+    }
+
+    // Find the index of head position
+    int head_index = -1;
+    for (int i = 0; i < num_requests; ++i) {
+        if (requests[i] >= head_position) {
+            head_index = i;
+            break;
+        }
+    }
+
+    printf("Disk request order (SCAN):\n");
+    for (int i = head_index; i < num_requests; ++i) {
+        printf("%d ", requests[i]);
+    }
+    for (int i = head_index - 1; i >= 0; --i) {
+        printf("%d ", requests[i]);
+    }
+    printf("\n");
+
+    free(requests);
+
+    return 0;
+}

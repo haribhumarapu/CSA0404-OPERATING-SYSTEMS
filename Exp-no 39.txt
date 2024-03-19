@@ -1,0 +1,76 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_REQUESTS 100
+#define MAX_TRACKS 200
+
+void cscan(int tracks[], int num_tracks, int head, int num_requests, int requests[]) {
+    int i, j, current, previous, total_movement = 0;
+    int visited[MAX_REQUESTS] = {0};
+
+    // Sort the requests
+    for (i = 0; i < num_requests - 1; ++i) {
+        for (j = 0; j < num_requests - i - 1; ++j) {
+            if (requests[j] > requests[j + 1]) {
+                int temp = requests[j];
+                requests[j] = requests[j + 1];
+                requests[j + 1] = temp;
+            }
+        }
+    }
+
+    // Perform C-SCAN
+    printf("Head movement order: %d ", head);
+    previous = head;
+    for (i = 0; i < num_requests; ++i) {
+        current = requests[i];
+        if (current < head) {
+            total_movement += head - current;
+            printf("<- %d ", current);
+            previous = current;
+        }
+    }
+    printf("<- 0 ");
+    previous = 0;
+    total_movement += head;
+    for (i = 0; i < num_requests; ++i) {
+        current = requests[i];
+        if (current > head && !visited[i]) {
+            visited[i] = 1;
+            total_movement += current - previous;
+            printf("-> %d ", current);
+            previous = current;
+        }
+    }
+    printf("-> %d\n", MAX_TRACKS - 1);
+    printf("Total head movement: %d\n", total_movement);
+}
+
+int main() {
+    int tracks[MAX_TRACKS];
+    int num_tracks, head, num_requests, i;
+    int requests[MAX_REQUESTS];
+
+    // Initialize disk tracks with track numbers
+    for (i = 0; i < MAX_TRACKS; ++i) {
+        tracks[i] = i;
+    }
+
+    printf("Enter the number of tracks on the disk: ");
+    scanf("%d", &num_tracks);
+
+    printf("Enter the head position: ");
+    scanf("%d", &head);
+
+    printf("Enter the number of requests: ");
+    scanf("%d", &num_requests);
+
+    printf("Enter the track numbers for requests:\n");
+    for (i = 0; i < num_requests; ++i) {
+        scanf("%d", &requests[i]);
+    }
+
+    cscan(tracks, num_tracks, head, num_requests, requests);
+
+    return 0;
+}
